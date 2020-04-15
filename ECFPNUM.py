@@ -11,7 +11,7 @@ from sklearn.externals import joblib
 from keras.models import Sequential
 from keras.layers import Dense
 from keras import backend as K
-from add_function_group.feature import molecules
+from add_functional_group.feature import molecules
 # K.tensorflow_backend._get_available_gpus()
 import argparse
 
@@ -32,18 +32,19 @@ def train(input_file, epochs, random_seed):
     y_val = validation['IE'].values
 
     x_test = molecules(test['smiles'].tolist()).ECFP_num()
+    y_test = test['IE'].values
     
     
     def rmse(y_true, y_pred):
-        return K.sqrt(K.mean(K.square(y_pred - y_true), axis=-1))
+        return K.sqrt(K.mean(K.square(y_pred - y_true)))
 
     # building model
     model = Sequential()
-    model.add(Dense(output_dim=int(X_train.shape[1]/2), input_dim=X_train.shape[1],activation='relu'))
-    model.add(Dense(output_dim=int(X_train.shape[1]/6),activation='relu'))
-    model.add(Dense(output_dim=int(X_train.shape[1]/12),activation='relu'))
-    model.add(Dense(output_dim=y_train.shape[1]))
-    model.compile(loss='mae', optimizer='adam',metrics=['mae',rmse],)
+    model.add(Dense(output_dim=int(x_train.shape[1]/2), input_dim=x_train.shape[1],activation='relu'))
+    model.add(Dense(output_dim=int(x_train.shape[1]/6),activation='relu'))
+    model.add(Dense(output_dim=int(x_train.shape[1]/12),activation='relu'))
+    model.add(Dense(output_dim=1))
+    model.compile(loss='mae', optimizer='adam',metrics=['mae',rmse])
     print('Training -----------')
     model.fit(x_train, y_train, verbose=1, epochs=epochs, validation_data=[x_val, y_val])
     
@@ -64,15 +65,19 @@ if __name__ == "__main__":
                         help='the file including smiles and corresponding IE and EA', default='MP_clean_canonize_cut.csv')
     parser.add_argument('-e', '--epochs',
                         help='how many epochs would be trained', default=100, type=int)
+    parser.add_argument('-r', '--rounds',
+                        help='how many rounds', default=3, type=int)
     args = vars(parser.parse_args())
     
-    log = np.zeros((10,2))
+    log = np.zeros((args["rounds"],2))
 
-    for i in range(10):
-        mae, rmse = train(random_seed=i)
+    for i in range(args["rounds"]):
+        loss, mae, rmse = train(input_file=args["data_file"], epochs=args["epochs"],random_seed=i)
+        #print(train(input_file=args["data_file"], epochs=args["epochs"],random_seed=i))
         log[i,0] = mae
         log[i,1] = rmse
-
+    
+    print('########################################################')
     print('mean : '+str(np.mean(log, axis=0)))
     print('std : '+str(np.std(log, axis=0)))
 
