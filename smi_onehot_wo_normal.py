@@ -2,9 +2,9 @@ from __future__ import print_function
 import numpy as np
 import pandas as pd
 import RNN_property_predictor
-import add_functinoal_group.feature import molecules
+from add_function_group.feature import molecules
 from sklearn.metrics import mean_squared_error, mean_absolute_error
-
+import argparse
 try:
     import tensorflow.compat.v1 as tf 
     tf.compat.v1.disable_v2_behavior()
@@ -35,16 +35,16 @@ def train(input_file, epochs, random_seed, property):
     y_val = validation[[property]].values
 
     # this is for check
-    print("the size of x_val"+str(x_train.shape))
-    print("the size of y_val"+str(x_train.shape))
+    print("the size of x_val"+str(x_val.shape))
+    print("the size of y_val"+str(x_val.shape))
 
 
-    x_test = molecules(test['smiles'].tolist()).one_hot(char_set=char_set)
+    x_test, x_test_g, new_smi_test = molecules(test['smiles'].tolist()).one_hot(char_set=char_set)
     y_test = test[[property]].values
     
     # this is for check
-    print("the size of x_test"+str(x_train.shape))
-    print("the size of y_test"+str(x_train.shape))
+    print("the size of x_test"+str(x_test.shape))
+    print("the size of y_test"+str(y_test.shape))
 
 
 
@@ -61,10 +61,10 @@ def train(input_file, epochs, random_seed, property):
     batch_size = 32
 
 
-    model = property_predictor_test.Model(seqlen_x = seqlen_x, dim_x = dim_x, dim_y = dim_y, dim_z = dim_z, dim_h = dim_h,
+    model = RNN_property_predictor.Model(seqlen_x = seqlen_x, dim_x = dim_x, dim_y = dim_y, dim_z = dim_z, dim_h = dim_h,
                         n_hidden = n_hidden, batch_size = batch_size, char_set = char_set)
     with model.session:
-        model.train(trnX_L=x_train, trnY_L=trnY_L,valX_L=valX_L, valY_L=valY_L, epoch)
+        model.train(trnX_L=x_train, trnY_L=y_train,valX_L=x_val, valY_L=y_val, epochs=epochs)
         #model.saver.save(model.session, "./SMILES(RNN)_model/SMILES(RNN)"+str(random_seed)+'.ckpt')
         y_test_hat=model.predict(x_test)
         

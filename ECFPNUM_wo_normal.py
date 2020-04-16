@@ -11,7 +11,7 @@ from sklearn.externals import joblib
 from keras.models import Sequential
 from keras.layers import Dense
 from keras import backend as K
-from add_functional_group.feature import molecules
+from add_function_group.feature import molecules
 # K.tensorflow_backend._get_available_gpus()
 import argparse
 
