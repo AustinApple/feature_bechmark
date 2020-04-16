@@ -17,7 +17,7 @@ import argparse
 
 
 
-def train(input_file, epochs, random_seed):
+def train(input_file, epochs, random_seed, property):
     data = pd.read_csv(input_file)
     
     np.random.seed(random_seed)
@@ -25,14 +25,14 @@ def train(input_file, epochs, random_seed):
     data = data.iloc[random_index]
     train, validation, test = np.split(data, [int(0.8*len(data)), int(0.9*len(data))])
     
-    x_train = molecules(train['smiles'].tolist()).ECFP_num()
-    y_train = train['IE'].values
+    x_train = np.concatenate((molecules(train['smiles'].tolist()).ECFP_num(),molecules(train['smiles'].tolist()).SYBYL()), axis=1)
+    y_train = train[property].values
     
-    x_val = molecules(validation['smiles'].tolist()).ECFP_num()
-    y_val = validation['IE'].values
+    x_val = np.concatenate((molecules(validation['smiles'].tolist()).ECFP_num(),molecules(validation['smiles'].tolist()).SYBYL()), axis=1)
+    y_val = validation[property].values
 
-    x_test = molecules(test['smiles'].tolist()).ECFP_num()
-    y_test = test['IE'].values
+    x_test = np.concatenate((molecules(test['smiles'].tolist()).ECFP_num(),molecules(test['smiles'].tolist()).SYBYL()), axis=1)
+    y_test = test[property].values
     
     
     def rmse(y_true, y_pred):
@@ -66,13 +66,15 @@ if __name__ == "__main__":
     parser.add_argument('-e', '--epochs',
                         help='how many epochs would be trained', default=100, type=int)
     parser.add_argument('-r', '--rounds',
-                        help='how many rounds', default=3, type=int)
+                        help='how many rounds', default=10, type=int)
+    parser.add_argument('-p', '--property',
+                        help='which property do you want to train')
     args = vars(parser.parse_args())
     
     log = np.zeros((args["rounds"],2))
 
     for i in range(args["rounds"]):
-        loss, mae, rmse = train(input_file=args["data_file"], epochs=args["epochs"],random_seed=i)
+        loss, mae, rmse = train(input_file=args["data_file"], epochs=args["epochs"],random_seed=i, property=args["property"])
         #print(train(input_file=args["data_file"], epochs=args["epochs"],random_seed=i))
         log[i,0] = mae
         log[i,1] = rmse
