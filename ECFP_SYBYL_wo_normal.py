@@ -26,13 +26,13 @@ def train(input_file, epochs, random_seed, property):
     train, validation, test = np.split(data, [int(0.8*len(data)), int(0.9*len(data))])
     
     x_train = np.concatenate((molecules(train['smiles'].tolist()).ECFP_num(),molecules(train['smiles'].tolist()).SYBYL()), axis=1)
-    y_train = train[property].values
+    y_train = train[[property]].values
     
     x_val = np.concatenate((molecules(validation['smiles'].tolist()).ECFP_num(),molecules(validation['smiles'].tolist()).SYBYL()), axis=1)
-    y_val = validation[property].values
+    y_val = validation[[property]].values
 
     x_test = np.concatenate((molecules(test['smiles'].tolist()).ECFP_num(),molecules(test['smiles'].tolist()).SYBYL()), axis=1)
-    y_test = test[property].values
+    y_test = test[[property]].values
     
     
     def rmse(y_true, y_pred):
@@ -43,7 +43,7 @@ def train(input_file, epochs, random_seed, property):
     model.add(Dense(output_dim=int(x_train.shape[1]/2), input_dim=x_train.shape[1],activation='relu'))
     model.add(Dense(output_dim=int(x_train.shape[1]/6),activation='relu'))
     model.add(Dense(output_dim=int(x_train.shape[1]/12),activation='relu'))
-    model.add(Dense(output_dim=1))
+    model.add(Dense(output_dim=int(y_train.shape[1])))
     model.compile(loss='mae', optimizer='adam',metrics=['mae',rmse])
     print('Training -----------')
     model.fit(x_train, y_train, verbose=1, epochs=epochs, validation_data=[x_val, y_val])
