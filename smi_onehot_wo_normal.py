@@ -23,7 +23,7 @@ def train(input_file, epochs, random_seed, property):
     data = data.iloc[random_index]
     train, validation, test = np.split(data, [int(0.8*len(data)), int(0.9*len(data))])
 
-    x_train, x_train_g, new_smi_train = molecules(train['smiles'].tolist()).one_hot(char_set=char_set)
+    x_train, new_smi_train = molecules(train['smiles'].tolist()).one_hot(char_set=char_set)
     y_train = train[[property]].values
 
     # this is for check
@@ -31,7 +31,7 @@ def train(input_file, epochs, random_seed, property):
     print("the size of y_train"+str(x_train.shape))
 
     
-    x_val, x_val_g, new_smi_val = molecules(validation['smiles'].tolist()).one_hot(char_set=char_set)
+    x_val, new_smi_val = molecules(validation['smiles'].tolist()).one_hot(char_set=char_set)
     y_val = validation[[property]].values
 
     # this is for check
@@ -39,7 +39,7 @@ def train(input_file, epochs, random_seed, property):
     print("the size of y_val"+str(x_val.shape))
 
 
-    x_test, x_test_g, new_smi_test = molecules(test['smiles'].tolist()).one_hot(char_set=char_set)
+    x_test, new_smi_test = molecules(test['smiles'].tolist()).one_hot(char_set=char_set)
     y_test = test[[property]].values
     
     # this is for check
