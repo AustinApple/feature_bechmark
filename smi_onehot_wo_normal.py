@@ -24,29 +24,14 @@ def train(input_file, epochs, random_seed, property):
     train, validation, test = np.split(data, [int(0.8*len(data)), int(0.9*len(data))])
 
     x_train, new_smi_train = molecules(train['smiles'].tolist()).one_hot(char_set=char_set)
-    y_train = train[[property]].values
+    y_train = train[property].values
 
-    # this is for check
-    print("the size of x_train"+str(x_train.shape))
-    print("the size of y_train"+str(x_train.shape))
-
-    
     x_val, new_smi_val = molecules(validation['smiles'].tolist()).one_hot(char_set=char_set)
-    y_val = validation[[property]].values
-
-    # this is for check
-    print("the size of x_val"+str(x_val.shape))
-    print("the size of y_val"+str(x_val.shape))
-
+    y_val = validation[property].values
 
     x_test, new_smi_test = molecules(test['smiles'].tolist()).one_hot(char_set=char_set)
-    y_test = test[[property]].values
+    y_test = test[property].values
     
-    # this is for check
-    print("the size of x_test"+str(x_test.shape))
-    print("the size of y_test"+str(y_test.shape))
-
-
 
     print('::: model training')
 

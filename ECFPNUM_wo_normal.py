@@ -26,13 +26,14 @@ def train(input_file, epochs, random_seed, property):
     train, validation, test = np.split(data, [int(0.8*len(data)), int(0.9*len(data))])
     
     x_train = molecules(train['smiles'].tolist()).ECFP_num()
-    y_train = train[[property]].values
-    
+    y_train = train[property].values
+    print("#####################")
+    print(y_train.shape)
     x_val = molecules(validation['smiles'].tolist()).ECFP_num()
-    y_val = validation[[property]].values
+    y_val = validation[property].values
 
     x_test = molecules(test['smiles'].tolist()).ECFP_num()
-    y_test = test[[property]].values
+    y_test = test[property].values
     
     
     def rmse(y_true, y_pred):
@@ -67,7 +68,7 @@ if __name__ == "__main__":
                         help='how many epochs would be trained', default=100, type=int)
     parser.add_argument('-r', '--rounds',
                         help='how many rounds', default=10, type=int)
-    parser.add_argument('-p', '--property',
+    parser.add_argument('-p', '--property', nargs='+',
                         help='which property do you want to train')
     args = vars(parser.parse_args())
     
