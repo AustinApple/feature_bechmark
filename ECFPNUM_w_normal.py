@@ -7,6 +7,7 @@ from sklearn import preprocessing
 from sklearn import utils
 from sklearn.metrics import mean_squared_error, mean_absolute_error 
 from sklearn.model_selection import KFold
+from sklearn.preprocessing import StandardScaler
 from keras.models import Sequential
 from keras.layers import Dense
 from keras import backend as K
@@ -22,13 +23,17 @@ def test(input_file, epochs, property, n_splits):
     
     log = np.zeros((n_splits,len(property),2))   # axis-0 : # of samples, axis-1 : # of property, axis-2 : MAE, RMSE
     
+    scaler_Y = StandardScaler()
+    scaler_Y.fit(data[property])
+
+
     kf = KFold(n_splits=n_splits, random_state=0, shuffle=True)
     for i, (train_index, test_index) in enumerate(kf.split(data)):
         x_train = molecules(data['smiles'][train_index].tolist()).ECFP_num()
-        y_train = data[property].iloc[train_index].values
+        y_train = scaler_Y.transform(data[property].iloc[train_index].values)
       
         x_test = molecules(data['smiles'][test_index].tolist()).ECFP_num()
-        y_test = data[property].iloc[test_index].values
+        y_test = scaler_Y.transform(data[property].iloc[test_index].values)
         
         
         def rmse(y_true, y_pred):
@@ -43,12 +48,9 @@ def test(input_file, epochs, property, n_splits):
         model.compile(loss='mae', optimizer='adam',metrics=['mae',rmse])
         print('Training -----------')
         model.fit(x_train, y_train, verbose=1, epochs=epochs)
-        # print("################################################")
-        # print(model.predict(x_test))
-        # print("################################################")
         for j in range(len(property)):
-            log[i,j,0] = mean_absolute_error(y_test[:,j],model.predict(x_test)[:,j])
-            log[i,j,1] = mean_squared_error(y_test[:,j],model.predict(x_test)[:,j],squared=False)
+            log[i,j,0] = mean_absolute_error(y_test[:,j],scaler_Y.inverse_transform(model.predict(x_test))[:,j])
+            log[i,j,1] = mean_squared_error(y_test[:,j],scaler_Y.inverse_transform(model.predict(x_test))[:,j],squared=False)
 
 
     return log
@@ -70,8 +72,6 @@ if __name__ == "__main__":
 
     
     print('########################################################')
-    
-   
     for i in range(len(args["property"])):
         print(args["property"][i]+' MAE mean : '+str(np.mean(log[:,i,0])))
         print(args["property"][i]+' MAE std : '+str(np.std(log[:,i,0])))
