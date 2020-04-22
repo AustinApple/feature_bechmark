@@ -17,12 +17,20 @@ import argparse
 
 
 
-def test(input_file, epochs, property, n_splits):
+def test(input_file, epochs, property, n_splits, normalize):
+    '''
+    the argument poperty is a list including the output property
+    '''  
     data = pd.read_csv(input_file)
+    if normalize:
+        scaler_Y = StandardScaler()
+        scaler_Y.fit(data[property])
+        data[property] = scaler_Y.transform(data[property])
     
-    log = np.zeros((n_splits,len(property),2))   # axis-0 : # of samples, axis-1 : # of property, axis-2 : MAE, RMSE
+    log = np.zeros((n_splits,len(property),2))   # axis-0 : # of samples, axis-1 : # of property, axis-2 : MAE and RMSE
     
     kf = KFold(n_splits=n_splits, random_state=0, shuffle=True)
+    
     for i, (train_index, test_index) in enumerate(kf.split(data)):
         x_train = molecules(data['smiles'][train_index].tolist()).ECFP_num()
         y_train = data[property].iloc[train_index].values
@@ -47,8 +55,12 @@ def test(input_file, epochs, property, n_splits):
         # print(model.predict(x_test))
         # print("################################################")
         for j in range(len(property)):
-            log[i,j,0] = mean_absolute_error(y_test[:,j],model.predict(x_test)[:,j])
-            log[i,j,1] = mean_squared_error(y_test[:,j],model.predict(x_test)[:,j],squared=False)
+            if normalize:
+                log[i,j,0] = mean_absolute_error(y_test[:,j],scaler_Y.inverse_transform(model.predict(x_test)[:,j]))
+                log[i,j,1] = mean_squared_error(y_test[:,j],scaler_Y.inverse_transform(model.predict(x_test)[:,j]),squared=False)
+            else:
+                log[i,j,0] = mean_absolute_error(y_test[:,j],model.predict(x_test)[:,j])
+                log[i,j,1] = mean_squared_error(y_test[:,j],model.predict(x_test)[:,j],squared=False)
 
 
     return log
@@ -56,6 +68,7 @@ def test(input_file, epochs, property, n_splits):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+
     parser.add_argument('-i', '--data_file',
                         help='the file including smiles and corresponding IE and EA', default='MP_clean_canonize_cut.csv')
     parser.add_argument('-e', '--epochs',
@@ -64,9 +77,18 @@ if __name__ == "__main__":
                         help='how many folds', default=10, type=int)
     parser.add_argument('-p', '--property', nargs='+',
                         help='which property do you want to train')
+    
+    parser.add_argument('--normalize',action='store_true')
+    parser.add_argument('--no-normalize',action='store_false')
+    
     args = vars(parser.parse_args())
     
-    log = test(input_file=args["data_file"], epochs=args["epochs"], property=args["property"], n_splits=args["n_splits"])
+    if args["normalize"]:
+        log = test(input_file=args["data_file"], epochs=args["epochs"], property=args["property"], 
+                   n_splits=args["n_splits"], normalize=args["normalize"])
+    if args["no-normalize"]:
+        log = test(input_file=args["data_file"], epochs=args["epochs"], property=args["property"], 
+                   n_splits=args["n_splits"], normalize=args["no-normalize"])
 
     
     print('########################################################')
