@@ -80,16 +80,15 @@ if __name__ == "__main__":
                         help='which property do you want to train')
     
     parser.add_argument('--normalize',action='store_true')
-    parser.add_argument('--no-normalize',action='store_false')
     
     args = vars(parser.parse_args())
     
     if args["normalize"]:
         log = test(input_file=args["data_file"], epochs=args["epochs"], property=args["property"], 
                    n_splits=args["n_splits"], normalize=args["normalize"])
-    if args["no-normalize"]:
+    else:
         log = test(input_file=args["data_file"], epochs=args["epochs"], property=args["property"], 
-                   n_splits=args["n_splits"], normalize=args["no-normalize"])
+                   n_splits=args["n_splits"], normalize=False)
 
     
     print('########################################################')
