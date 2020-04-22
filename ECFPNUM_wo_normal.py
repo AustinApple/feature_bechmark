@@ -23,6 +23,7 @@ def test(input_file, epochs, property, n_splits, normalize):
     '''  
     data = pd.read_csv(input_file)
     if normalize:
+        print("start to normalize")
         scaler_Y = StandardScaler()
         scaler_Y.fit(data[property])
         data[property] = scaler_Y.transform(data[property])
