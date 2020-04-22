@@ -52,13 +52,12 @@ def test(input_file, epochs, property, n_splits, normalize):
         model.compile(loss='mae', optimizer='adam',metrics=['mae',rmse])
         print('Training -----------')
         model.fit(x_train, y_train, verbose=1, epochs=epochs)
-        # print("################################################")
-        # print(model.predict(x_test))
-        # print("################################################")
+
+
         for j in range(len(property)):
             if normalize:
-                log[i,j,0] = mean_absolute_error(y_test[:,j],scaler_Y.inverse_transform(model.predict(x_test)[:,j]))
-                log[i,j,1] = mean_squared_error(y_test[:,j],scaler_Y.inverse_transform(model.predict(x_test)[:,j]),squared=False)
+                log[i,j,0] = mean_absolute_error(scaler_Y.inverse_transform(y_test)[:,j],scaler_Y.inverse_transform(model.predict(x_test))[:,j])
+                log[i,j,1] = mean_squared_error(scaler_Y.inverse_transform(y_test)[:,j],scaler_Y.inverse_transform(model.predict(x_test))[:,j],squared=False)
             else:
                 log[i,j,0] = mean_absolute_error(y_test[:,j],model.predict(x_test)[:,j])
                 log[i,j,1] = mean_squared_error(y_test[:,j],model.predict(x_test)[:,j],squared=False)
