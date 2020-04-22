@@ -58,7 +58,7 @@ def test(input_file, epochs, property, n_splits, normalize):
         middle = BatchNormalization(axis=-1, name='encoder_dense0_norm')(middle)
 
         z_mean = Dense(hidden_dim, name='z_mean_sample')(middle)
-        prop_mid = Dense(hidden_dim/2, activation='tanh'])(z_mean)
+        prop_mid = Dense(hidden_dim/2, activation='tanh')(z_mean)
         
         for p_i in range(1, 3):
             prop_mid = Dense(int((hidden_dim/2) * 0.8 ** p_i),
