@@ -6,11 +6,11 @@ from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
 from sklearn import utils
 from sklearn.metrics import mean_squared_error, mean_absolute_error 
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.externals import joblib
+from sklearn.model_selection import KFold
 from keras.models import Sequential
 from keras.layers import Dense
 from keras import backend as K
+from sklearn.preprocessing import StandardScaler
 from add_function_group.feature import molecules
 # K.tensorflow_backend._get_available_gpus()
 import argparse
