@@ -4,6 +4,7 @@ import pandas as pd
 import RNN_property_predictor
 from add_function_group.feature import molecules
 from sklearn.metrics import mean_squared_error, mean_absolute_error
+from sklearn.model_selection import KFold
 import argparse
 try:
     import tensorflow.compat.v1 as tf 
