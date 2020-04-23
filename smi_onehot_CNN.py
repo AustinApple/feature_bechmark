@@ -1,9 +1,9 @@
-import CNN_property_predictor
 import numpy as np
 import pandas as pd
 import RNN_property_predictor
 from add_function_group.feature import molecules
 from sklearn.metrics import mean_squared_error, mean_absolute_error
+from sklearn.model_selection import KFold
 import argparse
 from keras.layers import Input, Lambda
 from keras.layers.core import Dense, Flatten, RepeatVector, Dropout
@@ -34,37 +34,39 @@ def test(input_file, epochs, property, n_splits, normalize):
     kf = KFold(n_splits=n_splits, random_state=0, shuffle=True)
     
     for i, (train_index, test_index) in enumerate(kf.split(data)):
-        x_train = molecules(data['smiles'][train_index].tolist()).one_hot(char_set=char_set)
+        x_train, new_smi_train = molecules(data['smiles'][train_index].tolist()).one_hot(char_set=char_set)
         y_train = data[property].iloc[train_index].values
       
-        x_test = molecules(data['smiles'][test_index].tolist()).one_hot(char_set=char_set)
+        x_test, new_smi_test = molecules(data['smiles'][test_index].tolist()).one_hot(char_set=char_set)
         y_test = data[property].iloc[test_index].values
 
         # start build CNN model
         #########################################################################
+        
         x_in = Input(shape=(x_train.shape[1], x_train.shape[2]), name='input_molecule_smi')
-        x = Convolution1D(filters=9, kernel_size=9, activation='tanh', name="encoder_conv0")(x_in)
+        x = Convolution1D(filters=15, kernel_size=1, activation='tanh', name="encoder_conv0")(x_in)
         x = BatchNormalization(axis=-1, name="encoder_norm0")(x)
         for j in range(1, 3):
-            x = Convolution1D(filters=int(8 * 1.15875438383 ** (j)),
-                              kernel_size=int(8 * 1.1758149644 ** (j)),
+            x = Convolution1D(filters=int(15 * 1.15875438383 ** (j)),
+                              kernel_size=int(1 * 1.1758149644 ** (j)),
                               activation='tanh',
                               name="encoder_conv{}".format(j))(x)
-            x = BatchNormalization(axis=-1,name="encoder_norm{}".format(j))(x)
+            #x = BatchNormalization(axis=-1,name="encoder_norm{}".format(j))(x)
         x = Flatten()(x)
-        hidden_dim = 200 
+        hidden_dim = 100
         # Middle layers
         middle = Dense(int(hidden_dim * 1.4928245388), activation='tanh', name='encoder_dense0')(x)
-        middle = BatchNormalization(axis=-1, name='encoder_dense0_norm')(middle)
+        
+        #middle = BatchNormalization(axis=-1, name='encoder_dense0_norm')(middle)
 
-        z_mean = Dense(hidden_dim, name='z_mean_sample')(middle)
-        prop_mid = Dense(hidden_dim/2, activation='tanh')(z_mean)
+        z_mean = Dense(int(hidden_dim), name='z_mean_sample')(middle)
+        prop_mid = Dense(int(hidden_dim/2), activation='tanh')(z_mean)
         
         for p_i in range(1, 3):
             prop_mid = Dense(int((hidden_dim/2) * 0.8 ** p_i),
                              activation='tanh',
                              name="property_predictor_dense{}".format(p_i))(prop_mid)
-            prop_mid = BatchNormalization()(prop_mid)
+            #prop_mid = BatchNormalization()(prop_mid)
 
         reg_prop_pred = Dense(y_test.shape[1], activation='linear',name='reg_property_output')(prop_mid)
         model = Model(inputs=x_in, outputs=reg_prop_pred)
