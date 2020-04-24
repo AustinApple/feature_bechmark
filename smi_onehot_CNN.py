@@ -44,11 +44,11 @@ def test(input_file, epochs, property, n_splits, normalize):
         #########################################################################
         
         x_in = Input(shape=(x_train.shape[1], x_train.shape[2]), name='input_molecule_smi')
-        x = Convolution1D(filters=15, kernel_size=1, activation='tanh', name="encoder_conv0")(x_in)
+        x = Convolution1D(filters=15, kernel_size=2, activation='tanh', name="encoder_conv0")(x_in)
         x = BatchNormalization(axis=-1, name="encoder_norm0")(x)
         for j in range(1, 3):
             x = Convolution1D(filters=int(15 * 1.15875438383 ** (j)),
-                              kernel_size=int(1 * 1.1758149644 ** (j)),
+                              kernel_size=int(2 * 1.1758149644 ** (j)),
                               activation='tanh',
                               name="encoder_conv{}".format(j))(x)
             #x = BatchNormalization(axis=-1,name="encoder_norm{}".format(j))(x)
@@ -77,6 +77,7 @@ def test(input_file, epochs, property, n_splits, normalize):
         model.compile(loss='mae', optimizer='adam',metrics=['mae',rmse])
         print('Training -----------')
         model.fit(x_train, y_train, verbose=1, epochs=epochs)
+        model.save("CNN_model.h5")
 
         for j in range(len(property)):
             if normalize:
