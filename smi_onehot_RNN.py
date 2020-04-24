@@ -5,6 +5,7 @@ import RNN_property_predictor
 from add_function_group.feature import molecules
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from sklearn.model_selection import KFold
+from sklearn.preprocessing import StandardScaler
 import argparse
 try:
     import tensorflow.compat.v1 as tf 
@@ -30,10 +31,10 @@ def test(input_file, epochs, property, n_splits, normalize):
     kf = KFold(n_splits=n_splits, random_state=0, shuffle=True)
 
     for i, (train_index, test_index) in enumerate(kf.split(data)):
-        x_train = molecules(data['smiles'][train_index].tolist()).one_hot(char_set=char_set)
+        x_train, new_smi_train = molecules(data['smiles'][train_index].tolist()).one_hot(char_set=char_set)
         y_train = data[property].iloc[train_index].values
       
-        x_test = molecules(data['smiles'][test_index].tolist()).one_hot(char_set=char_set)
+        x_test, new_smi_test = molecules(data['smiles'][test_index].tolist()).one_hot(char_set=char_set)
         y_test = data[property].iloc[test_index].values
 
         print('::: model training')
@@ -52,14 +53,14 @@ def test(input_file, epochs, property, n_splits, normalize):
         model = RNN_property_predictor.Model(seqlen_x = seqlen_x, dim_x = dim_x, dim_y = dim_y, dim_z = dim_z, dim_h = dim_h,
                             n_hidden = n_hidden, batch_size = batch_size, char_set = char_set)
         with model.session:
-            model.train(trnX_L=x_train, trnY_L=y_train, valX_L=x_val, valY_L=y_val, epochs=epochs)
+            model.train(trnX_L=x_train, trnY_L=y_train, epochs=epochs)
             for j in range(len(property)):
-            if normalize:
-                log[i,j,0] = mean_absolute_error(scaler_Y.inverse_transform(y_test)[:,j],scaler_Y.inverse_transform(model.predict(x_test))[:,j])
-                log[i,j,1] = mean_squared_error(scaler_Y.inverse_transform(y_test)[:,j],scaler_Y.inverse_transform(model.predict(x_test))[:,j],squared=False)
-            else:
-                log[i,j,0] = mean_absolute_error(y_test[:,j],model.predict(x_test)[:,j])
-                log[i,j,1] = mean_squared_error(y_test[:,j],model.predict(x_test)[:,j],squared=False)
+                if normalize:
+                    log[i,j,0] = mean_absolute_error(scaler_Y.inverse_transform(y_test)[:,j],scaler_Y.inverse_transform(model.predict(x_test))[:,j])
+                    log[i,j,1] = mean_squared_error(scaler_Y.inverse_transform(y_test)[:,j],scaler_Y.inverse_transform(model.predict(x_test))[:,j],squared=False)
+                else:
+                    log[i,j,0] = mean_absolute_error(y_test[:,j],model.predict(x_test)[:,j])
+                    log[i,j,1] = mean_squared_error(y_test[:,j],model.predict(x_test)[:,j],squared=False)
         
         tf.reset_default_graph()
     return log

@@ -47,13 +47,13 @@ class Model(object):
         self.session = tf.Session()
         
 
-    def train(self, trnX_L, trnY_L, valX_L, valY_L, epochs):
+    def train(self, trnX_L, trnY_L, epochs):
 
-        self.mu_prior=np.mean(trnY_L,0)   
-        self.cov_prior=np.cov(trnY_L.T)     
+        # self.mu_prior=np.mean(trnY_L,0)   
+        # self.cov_prior=np.cov(trnY_L.T)     
 
-        self.tf_mu_prior=tf.constant(self.mu_prior, shape=[1, self.dim_y], dtype=tf.float32)   
-        self.tf_cov_prior=tf.constant(self.cov_prior, shape=[self.dim_y, self.dim_y], dtype=tf.float32)
+        # self.tf_mu_prior=tf.constant(self.mu_prior, shape=[1, self.dim_y], dtype=tf.float32)   
+        # self.tf_cov_prior=tf.constant(self.cov_prior, shape=[self.dim_y, self.dim_y], dtype=tf.float32)
 
 
         # objective functions   
@@ -68,7 +68,7 @@ class Model(object):
         batch_size_L=int(self.batch_size)
         
         n_batch=int(len(trnX_L)/batch_size_L)
-        batch_size_val_L=int(len(valX_L)/10)
+    
         
        
             
@@ -116,29 +116,30 @@ class Model(object):
                 # print(trn_res[1])
             # self.saver.save(self.session, 'checkpoint_model/PP_model', global_step=epoch)
             # this is for the remain data
-            print(trnY_L[end_L:].shape)
+            print(trn_res[1])
             trn_res = self.session.run([train_op, objYpred_MAE,summary_objYpred_MSE],
                                     feed_dict = {self.x_L: trnX_L[end_L:], 
                                                  self.y_L: trnY_L[end_L:]})
             
+            
                 # writer.add_summary(trn_res[5], epoch * n_batch + i)             
-            writer.add_summary(trn_res[2], epoch)
-            val_res = []
-            for i in range(10):
-                start_L=i*batch_size_val_L
-                end_L=start_L+batch_size_val_L
-                val_res.append(self.session.run([objYpred_MAE],
-                                feed_dict = {self.x_L: valX_L[start_L:end_L], 
-                                             self.y_L: valY_L[start_L:end_L]}))
+            # writer.add_summary(trn_res[2], epoch)
+            # val_res = []
+            # for i in range(10):
+            #     start_L=i*batch_size_val_L
+            #     end_L=start_L+batch_size_val_L
+            #     val_res.append(self.session.run([objYpred_MAE],
+            #                     feed_dict = {self.x_L: valX_L[start_L:end_L], 
+            #                                  self.y_L: valY_L[start_L:end_L]}))
                 
             # writer.add_summary(summary_val, epoch * int(10)+ i) 
             # writer.add_summary(summary_val, epoch)
             
             
-            val_res=np.mean(val_res,axis=0)
-            print('---', ['Validation', 'cost_val', val_res[0]])
+            # val_res=np.mean(val_res,axis=0)
+            # print('---', ['Validation', 'cost_val', val_res[0]])
             
-            val_log[epoch] = val_res[0] 
+            # val_log[epoch] = val_res[0] 
 
            
        

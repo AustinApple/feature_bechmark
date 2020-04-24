@@ -86,16 +86,20 @@ if __name__ == "__main__":
     else:
         log = test(input_file=args["data_file"], epochs=args["epochs"], property=args["property"], 
                    n_splits=args["n_splits"], normalize=False)
+    
+    
+    
+    with open("test",'a+') as f:
+    
+        f.write('########################################################\n')
+        f.write(str(args['property'])+'\n')
+        f.write('normalize :' + str(args['normalize']) + '\n')
 
-    
-    print('########################################################')
-    
-   
-    for i in range(len(args["property"])):
-        print(args["property"][i]+' MAE mean : '+str(np.mean(log[:,i,0])))
-        print(args["property"][i]+' MAE std : '+str(np.std(log[:,i,0])))
-        print(args["property"][i]+' RMSE mean : '+str(np.mean(log[:,i,1])))
-        print(args["property"][i]+' RMSE std : '+str(np.std(log[:,i,1])))
-        
+
+        for i in range(len(args["property"])):
+            f.write(args["property"][i]+' MAE mean : '+str(np.mean(log[:,i,0]))+'\n')
+            f.write(args["property"][i]+' MAE std : '+str(np.std(log[:,i,0]))+'\n')
+            f.write(args["property"][i]+' RMSE mean : '+str(np.mean(log[:,i,1]))+'\n')
+            f.write(args["property"][i]+' RMSE std : '+str(np.std(log[:,i,1]))+'\n')
 
 

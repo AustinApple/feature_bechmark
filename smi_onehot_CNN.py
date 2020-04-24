@@ -12,7 +12,7 @@ from keras.layers.normalization import BatchNormalization
 from keras.models import load_model
 from keras import backend as K
 from keras.models import Model
-
+from sklearn.preprocessing import StandardScaler
 
 def test(input_file, epochs, property, n_splits, normalize):
     '''
