@@ -71,10 +71,10 @@ def test(input_file, epochs, property, n_splits, normalize):
         reg_prop_pred = Dense(y_test.shape[1], activation='linear',name='reg_property_output')(prop_mid)
         model = Model(inputs=x_in, outputs=reg_prop_pred)
         ################################################################################
-        def rmse(y_true, y_pred):
-            return K.sqrt(K.mean(K.square(y_pred - y_true)))
+        # def rmse(y_true, y_pred):
+        #     return K.sqrt(K.mean(K.square(y_pred - y_true)))
 
-        model.compile(loss='mae', optimizer='adam',metrics=['mae',rmse])
+        model.compile(loss='mae', optimizer='adam',metrics=['mae'])
         print('Training -----------')
         model.fit(x_train, y_train, verbose=1, epochs=epochs)
         model.save("CNN_model.h5")
