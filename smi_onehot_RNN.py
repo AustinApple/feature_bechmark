@@ -72,7 +72,7 @@ if __name__ == "__main__":
     parser.add_argument('-i', '--data_file',
                         help='the file including smiles and corresponding IE and EA', default='MP_clean_canonize_cut.csv')
     parser.add_argument('-e', '--epochs',
-                        help='how many epochs would be trained', default=100, type=int)
+                        help='how many epochs would be trained', default=200, type=int)
     parser.add_argument('-n', '--n_splits',
                         help='how many folds', default=10, type=int)
     parser.add_argument('-p', '--property', nargs='+',
@@ -90,11 +90,15 @@ if __name__ == "__main__":
                    n_splits=args["n_splits"], normalize=False)
 
     
-    print('########################################################')
-    
-   
-    for i in range(len(args["property"])):
-        print(args["property"][i]+' MAE mean : '+str(np.mean(log[:,i,0])))
-        print(args["property"][i]+' MAE std : '+str(np.std(log[:,i,0])))
-        print(args["property"][i]+' RMSE mean : '+str(np.mean(log[:,i,1])))
-        print(args["property"][i]+' RMSE std : '+str(np.std(log[:,i,1])))
+    with open("test_RNN",'a+') as f:
+        
+        f.write('########################################################\n')
+        f.write(str(args['property'])+'\n')
+        f.write('normalize :' + str(args['normalize']) + '\n')
+
+
+        for i in range(len(args["property"])):
+            f.write(args["property"][i]+' MAE mean : '+str(np.mean(log[:,i,0]))+'\n')
+            f.write(args["property"][i]+' MAE std : '+str(np.std(log[:,i,0]))+'\n')
+            f.write(args["property"][i]+' RMSE mean : '+str(np.mean(log[:,i,1]))+'\n')
+            f.write(args["property"][i]+' RMSE std : '+str(np.std(log[:,i,1]))+'\n')
